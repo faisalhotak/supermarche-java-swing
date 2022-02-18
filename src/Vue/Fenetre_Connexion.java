@@ -69,6 +69,7 @@ public class Fenetre_Connexion extends javax.swing.JFrame {
         jPanel1.add(jPanel_Gauche, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 0, 440, 360));
 
         jPanel_Droit.setBackground(new java.awt.Color(107, 140, 94));
+        jPanel_Droit.setPreferredSize(new java.awt.Dimension(815, 350));
         jPanel_Droit.setLayout(new org.netbeans.lib.awtextra.AbsoluteLayout());
 
         jLab_Nom.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N

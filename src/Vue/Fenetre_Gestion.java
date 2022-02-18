@@ -35,6 +35,8 @@ import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.awt.im.InputContext;
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.text.ParseException;
@@ -44,6 +46,9 @@ import java.util.logging.Level;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import java.sql.Timestamp;
+import java.util.HashMap;
+import java.util.Locale;
+import java.util.regex.*;
 import javax.swing.JComboBox;
 import javax.swing.JTable;
 import javax.swing.JTextField;
@@ -65,6 +70,20 @@ public class Fenetre_Gestion extends javax.swing.JFrame {
     private final Utilisateur utilisateur = ControleConnexionSingleton.getUser();
     private boolean ajout = false, modif = false, supp = false;
     
+    private HashMap<Character, Character> codeBarresRemplaceur = new HashMap<Character, Character>()
+    {{ 
+        put('&', '1'); 
+        put('é', '2'); 
+        put('"', '3'); 
+        put('\'', '4'); 
+        put('(', '5'); 
+        put('§', '6'); 
+        put('è', '7'); 
+        put('!', '8'); 
+        put('ç', '9');
+        put('à', '0');
+    }};
+            
     // Mode correspondant aux sections où l'on se trouve
     // 'C' pour Clients
     // 'E' pour Employés
@@ -76,7 +95,7 @@ public class Fenetre_Gestion extends javax.swing.JFrame {
 
     public Fenetre_Gestion() {
         initComponents();
-        
+
         // On applique des renderer aux colonnes des tables
         renderTables();
         
@@ -104,8 +123,6 @@ public class Fenetre_Gestion extends javax.swing.JFrame {
     private void initComponents() {
 
         jLab_Titre = new javax.swing.JLabel();
-        jBtn_Quitter = new javax.swing.JButton();
-        jBtn_Parametres = new javax.swing.JButton();
         jBtn_Enregistrer = new javax.swing.JButton();
         jPanel_Etat = new javax.swing.JPanel();
         jLab_Etat = new javax.swing.JLabel();
@@ -122,6 +139,8 @@ public class Fenetre_Gestion extends javax.swing.JFrame {
         jLabel_Profil = new javax.swing.JLabel();
         jBtn_Vendre = new javax.swing.JButton();
         jButton_ChiffresVentes = new javax.swing.JButton();
+        jBtn_Parametres = new javax.swing.JButton();
+        jBtn_Quitter = new javax.swing.JButton();
         jPanel_Recherche = new javax.swing.JPanel();
         jTXT_Recherche = new javax.swing.JTextField();
         jLabel1 = new javax.swing.JLabel();
@@ -155,11 +174,6 @@ public class Fenetre_Gestion extends javax.swing.JFrame {
         jLab_Pays = new javax.swing.JLabel();
         jCombo_Localite = new javax.swing.JComboBox<>(leModeleLocalite);
         jCombo_Pays = new javax.swing.JComboBox<>(leModelePays);
-        jPanel_Form_Clients = new javax.swing.JPanel();
-        jScrollPane_Clients = new javax.swing.JScrollPane();
-        jTable_Clients = new javax.swing.JTable(leModeleClient);
-        jLab_Carte = new javax.swing.JLabel();
-        checkBox_Carte = new javax.swing.JCheckBox();
         jPanel_Form_Employes = new javax.swing.JPanel();
         jScrollPane_Employes = new javax.swing.JScrollPane();
         jTable_Employes = new javax.swing.JTable(leModeleEmploye);
@@ -168,6 +182,11 @@ public class Fenetre_Gestion extends javax.swing.JFrame {
         jLab_Euro = new javax.swing.JLabel();
         jLabel_Poste = new javax.swing.JLabel();
         jComboBox_Poste = new javax.swing.JComboBox<>(leModelePoste);
+        jPanel_Form_Clients = new javax.swing.JPanel();
+        jScrollPane_Clients = new javax.swing.JScrollPane();
+        jTable_Clients = new javax.swing.JTable(leModeleClient);
+        jLab_Carte = new javax.swing.JLabel();
+        checkBox_Carte = new javax.swing.JCheckBox();
         jPanel_Form_Produits = new javax.swing.JPanel();
         jPanel_CoordonneesProduit = new javax.swing.JPanel();
         jLab_CodeProduit = new javax.swing.JLabel();
@@ -198,35 +217,17 @@ public class Fenetre_Gestion extends javax.swing.JFrame {
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setTitle("Gestion du Supermarché");
+        setMaximumSize(new java.awt.Dimension(1000, 700));
+        setMinimumSize(new java.awt.Dimension(1000, 700));
+        setPreferredSize(new java.awt.Dimension(1000, 700));
+        setSize(new java.awt.Dimension(1000, 700));
         getContentPane().setLayout(new org.netbeans.lib.awtextra.AbsoluteLayout());
 
         jLab_Titre.setFont(new java.awt.Font("Segoe UI", 1, 18)); // NOI18N
         jLab_Titre.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/Icones/client.png"))); // NOI18N
         jLab_Titre.setText("   Gestion des clients");
         jLab_Titre.setToolTipText("");
-        getContentPane().add(jLab_Titre, new org.netbeans.lib.awtextra.AbsoluteConstraints(700, 70, 440, 40));
-
-        jBtn_Quitter.setBackground(new java.awt.Color(23, 35, 51));
-        jBtn_Quitter.setFont(new java.awt.Font("Tahoma", 1, 14)); // NOI18N
-        jBtn_Quitter.setForeground(new java.awt.Color(255, 255, 255));
-        jBtn_Quitter.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/Icon_client/Quitter_prog.png"))); // NOI18N
-        jBtn_Quitter.setText("Quitter");
-        jBtn_Quitter.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mouseClicked(java.awt.event.MouseEvent evt) {
-                jBtn_QuitterMouseClicked(evt);
-            }
-        });
-        getContentPane().add(jBtn_Quitter, new org.netbeans.lib.awtextra.AbsoluteConstraints(10, 790, 220, 70));
-
-        jBtn_Parametres.setBackground(new java.awt.Color(23, 35, 51));
-        jBtn_Parametres.setForeground(new java.awt.Color(255, 255, 255));
-        jBtn_Parametres.setText("Paramètres");
-        jBtn_Parametres.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mouseClicked(java.awt.event.MouseEvent evt) {
-                jBtn_ParametresMouseClicked(evt);
-            }
-        });
-        getContentPane().add(jBtn_Parametres, new org.netbeans.lib.awtextra.AbsoluteConstraints(10, 710, 220, 70));
+        getContentPane().add(jLab_Titre, new org.netbeans.lib.awtextra.AbsoluteConstraints(510, 60, 370, 30));
 
         jBtn_Enregistrer.setFont(new java.awt.Font("Tahoma", 1, 18)); // NOI18N
         jBtn_Enregistrer.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/Icon_client/save.png"))); // NOI18N
@@ -236,7 +237,7 @@ public class Fenetre_Gestion extends javax.swing.JFrame {
                 jBtn_EnregistrerMouseClicked(evt);
             }
         });
-        getContentPane().add(jBtn_Enregistrer, new org.netbeans.lib.awtextra.AbsoluteConstraints(1090, 790, 210, 80));
+        getContentPane().add(jBtn_Enregistrer, new org.netbeans.lib.awtextra.AbsoluteConstraints(780, 580, 190, 70));
         jBtn_Enregistrer.setEnabled(false);
 
         jPanel_Etat.setBackground(new java.awt.Color(255, 255, 255));
@@ -245,9 +246,9 @@ public class Fenetre_Gestion extends javax.swing.JFrame {
         jLab_Etat.setFont(new java.awt.Font("Lucida Grande", 1, 18)); // NOI18N
         jLab_Etat.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         jLab_Etat.setBorder(javax.swing.BorderFactory.createTitledBorder(""));
-        jPanel_Etat.add(jLab_Etat, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 10, 530, 60));
+        jPanel_Etat.add(jLab_Etat, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 0, 460, 40));
 
-        getContentPane().add(jPanel_Etat, new org.netbeans.lib.awtextra.AbsoluteConstraints(510, 790, 530, 70));
+        getContentPane().add(jPanel_Etat, new org.netbeans.lib.awtextra.AbsoluteConstraints(450, 210, 460, 40));
         jPanel_Etat.setVisible(false);
 
         jPanel_Side.setBackground(new java.awt.Color(23, 35, 51));
@@ -275,10 +276,10 @@ public class Fenetre_Gestion extends javax.swing.JFrame {
         jLab_Employes.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         jLab_Employes.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/Icones/employe.png"))); // NOI18N
         jLab_Employes.setText(" Employés");
-        jPanel_Employes.add(jLab_Employes, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 0, 240, 60));
+        jPanel_Employes.add(jLab_Employes, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, -10, 240, 70));
         jLab_Employes.setName("employes");
 
-        jPanel_Side.add(jPanel_Employes, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 190, 240, 60));
+        jPanel_Side.add(jPanel_Employes, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 180, 240, -1));
 
         jPanel_Produits.setBackground(new java.awt.Color(23, 35, 51));
         jPanel_Produits.setLayout(new org.netbeans.lib.awtextra.AbsoluteLayout());
@@ -291,7 +292,7 @@ public class Fenetre_Gestion extends javax.swing.JFrame {
         jPanel_Produits.add(jLab_Produits, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 0, 240, 60));
         jLab_Produits.setName("produits");
 
-        jPanel_Side.add(jPanel_Produits, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 270, 240, 60));
+        jPanel_Side.add(jPanel_Produits, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 250, 240, 60));
 
         jPanel_Tickets.setBackground(new java.awt.Color(23, 35, 51));
         jPanel_Tickets.setLayout(new org.netbeans.lib.awtextra.AbsoluteLayout());
@@ -304,18 +305,19 @@ public class Fenetre_Gestion extends javax.swing.JFrame {
         jPanel_Tickets.add(jLab_Tickets, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 0, 240, 60));
         jLab_Tickets.setName("tickets");
 
-        jPanel_Side.add(jPanel_Tickets, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 350, 240, 60));
+        jPanel_Side.add(jPanel_Tickets, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 330, 240, -1));
         jPanel_Side.add(jSeparator_Panels, new org.netbeans.lib.awtextra.AbsoluteConstraints(10, 70, 220, -1));
 
         jLabel_Profil.setBackground(new java.awt.Color(255, 255, 255));
+        jLabel_Profil.setFont(new java.awt.Font("Helvetica Neue", 0, 10)); // NOI18N
         jLabel_Profil.setForeground(new java.awt.Color(255, 255, 255));
         jLabel_Profil.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
         jLabel_Profil.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/Icones/user.png"))); // NOI18N
         jLabel_Profil.setToolTipText("Utilisateur connecté");
-        jPanel_Side.add(jLabel_Profil, new org.netbeans.lib.awtextra.AbsoluteConstraints(30, 10, 200, 60));
+        jPanel_Side.add(jLabel_Profil, new org.netbeans.lib.awtextra.AbsoluteConstraints(20, 10, 150, 50));
 
         jBtn_Vendre.setBackground(new java.awt.Color(23, 35, 51));
-        jBtn_Vendre.setFont(new java.awt.Font("Lucida Grande", 3, 14)); // NOI18N
+        jBtn_Vendre.setFont(new java.awt.Font("Lucida Grande", 3, 12)); // NOI18N
         jBtn_Vendre.setForeground(new java.awt.Color(255, 255, 255));
         jBtn_Vendre.setText("Procéder à une vente");
         jBtn_Vendre.addMouseListener(new java.awt.event.MouseAdapter() {
@@ -323,11 +325,11 @@ public class Fenetre_Gestion extends javax.swing.JFrame {
                 jBtn_VendreMouseReleased(evt);
             }
         });
-        jPanel_Side.add(jBtn_Vendre, new org.netbeans.lib.awtextra.AbsoluteConstraints(10, 450, 220, 80));
+        jPanel_Side.add(jBtn_Vendre, new org.netbeans.lib.awtextra.AbsoluteConstraints(20, 410, 190, 60));
         jBtn_Vendre.getAccessibleContext().setAccessibleDescription("");
 
         jButton_ChiffresVentes.setBackground(new java.awt.Color(23, 35, 51));
-        jButton_ChiffresVentes.setFont(new java.awt.Font("Lucida Grande", 1, 13)); // NOI18N
+        jButton_ChiffresVentes.setFont(new java.awt.Font("Lucida Grande", 1, 12)); // NOI18N
         jButton_ChiffresVentes.setForeground(new java.awt.Color(255, 255, 255));
         jButton_ChiffresVentes.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/Icones/euro-24.png"))); // NOI18N
         jButton_ChiffresVentes.setText(" Chiffres de Ventes");
@@ -336,9 +338,31 @@ public class Fenetre_Gestion extends javax.swing.JFrame {
                 jButton_ChiffresVentesMouseReleased(evt);
             }
         });
-        jPanel_Side.add(jButton_ChiffresVentes, new org.netbeans.lib.awtextra.AbsoluteConstraints(10, 580, 220, 80));
+        jPanel_Side.add(jButton_ChiffresVentes, new org.netbeans.lib.awtextra.AbsoluteConstraints(20, 480, 190, 60));
 
-        getContentPane().add(jPanel_Side, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 0, 240, 880));
+        jBtn_Parametres.setBackground(new java.awt.Color(23, 35, 51));
+        jBtn_Parametres.setForeground(new java.awt.Color(255, 255, 255));
+        jBtn_Parametres.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/connection/parametres.png"))); // NOI18N
+        jBtn_Parametres.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                jBtn_ParametresMouseClicked(evt);
+            }
+        });
+        jPanel_Side.add(jBtn_Parametres, new org.netbeans.lib.awtextra.AbsoluteConstraints(180, 10, 50, 40));
+
+        jBtn_Quitter.setBackground(new java.awt.Color(23, 35, 51));
+        jBtn_Quitter.setFont(new java.awt.Font("Tahoma", 1, 12)); // NOI18N
+        jBtn_Quitter.setForeground(new java.awt.Color(255, 255, 255));
+        jBtn_Quitter.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/Icon_client/Quitter_prog.png"))); // NOI18N
+        jBtn_Quitter.setText("Quitter");
+        jBtn_Quitter.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                jBtn_QuitterMouseClicked(evt);
+            }
+        });
+        jPanel_Side.add(jBtn_Quitter, new org.netbeans.lib.awtextra.AbsoluteConstraints(20, 550, 190, 60));
+
+        getContentPane().add(jPanel_Side, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 0, 240, 790));
 
         jPanel_Recherche.setBackground(new java.awt.Color(71, 120, 197));
         jPanel_Recherche.setLayout(new org.netbeans.lib.awtextra.AbsoluteLayout());
@@ -352,18 +376,18 @@ public class Fenetre_Gestion extends javax.swing.JFrame {
                 jTXT_RechercheKeyPressed(evt);
             }
         });
-        jPanel_Recherche.add(jTXT_Recherche, new org.netbeans.lib.awtextra.AbsoluteConstraints(810, 20, 260, 20));
+        jPanel_Recherche.add(jTXT_Recherche, new org.netbeans.lib.awtextra.AbsoluteConstraints(440, 20, 270, 20));
 
         jLabel1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/Icones/loupe.png"))); // NOI18N
-        jPanel_Recherche.add(jLabel1, new org.netbeans.lib.awtextra.AbsoluteConstraints(1080, 20, 30, 20));
+        jPanel_Recherche.add(jLabel1, new org.netbeans.lib.awtextra.AbsoluteConstraints(720, 20, 30, 20));
 
-        getContentPane().add(jPanel_Recherche, new org.netbeans.lib.awtextra.AbsoluteConstraints(240, 0, 1140, 60));
+        getContentPane().add(jPanel_Recherche, new org.netbeans.lib.awtextra.AbsoluteConstraints(240, 0, 770, 60));
 
         jPanel_AMS.setBackground(new java.awt.Color(255, 255, 255));
         jPanel_AMS.setBorder(javax.swing.BorderFactory.createEtchedBorder());
         jPanel_AMS.setLayout(new java.awt.GridBagLayout());
 
-        jBtn_Ajouter.setFont(new java.awt.Font("Lucida Grande", 0, 14)); // NOI18N
+        jBtn_Ajouter.setFont(new java.awt.Font("Lucida Grande", 0, 10)); // NOI18N
         jBtn_Ajouter.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/Icon_client/add.png"))); // NOI18N
         jBtn_Ajouter.setText(" Ajouter un client ");
         jBtn_Ajouter.setMinimumSize(new java.awt.Dimension(200, 60));
@@ -374,7 +398,7 @@ public class Fenetre_Gestion extends javax.swing.JFrame {
         });
         jPanel_AMS.add(jBtn_Ajouter, new java.awt.GridBagConstraints());
 
-        jBtn_Modifier.setFont(new java.awt.Font("Lucida Grande", 0, 14)); // NOI18N
+        jBtn_Modifier.setFont(new java.awt.Font("Lucida Grande", 0, 10)); // NOI18N
         jBtn_Modifier.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/Icon_client/edit.png"))); // NOI18N
         jBtn_Modifier.setText(" Modifier un client ");
         jBtn_Modifier.addMouseListener(new java.awt.event.MouseAdapter() {
@@ -384,7 +408,7 @@ public class Fenetre_Gestion extends javax.swing.JFrame {
         });
         jPanel_AMS.add(jBtn_Modifier, new java.awt.GridBagConstraints());
 
-        jBtn_Supprimer.setFont(new java.awt.Font("Lucida Grande", 0, 14)); // NOI18N
+        jBtn_Supprimer.setFont(new java.awt.Font("Lucida Grande", 0, 10)); // NOI18N
         jBtn_Supprimer.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/Icon_client/remove.png"))); // NOI18N
         jBtn_Supprimer.setText(" Supprimer un client ");
         jBtn_Supprimer.addMouseListener(new java.awt.event.MouseAdapter() {
@@ -394,7 +418,7 @@ public class Fenetre_Gestion extends javax.swing.JFrame {
         });
         jPanel_AMS.add(jBtn_Supprimer, new java.awt.GridBagConstraints());
 
-        getContentPane().add(jPanel_AMS, new org.netbeans.lib.awtextra.AbsoluteConstraints(440, 340, 730, 60));
+        getContentPane().add(jPanel_AMS, new org.netbeans.lib.awtextra.AbsoluteConstraints(410, 260, 540, 60));
 
         jPanel_Personne.setBackground(new java.awt.Color(255, 255, 255));
         jPanel_Personne.setLayout(new org.netbeans.lib.awtextra.AbsoluteLayout());
@@ -414,7 +438,7 @@ public class Fenetre_Gestion extends javax.swing.JFrame {
 
         jTxT_DateCreation.setEditable(false);
         jTxT_DateCreation.setHorizontalAlignment(javax.swing.JTextField.CENTER);
-        jPanel_InformationsPersonne.add(jTxT_DateCreation, new org.netbeans.lib.awtextra.AbsoluteConstraints(520, 34, 180, -1));
+        jPanel_InformationsPersonne.add(jTxT_DateCreation, new org.netbeans.lib.awtextra.AbsoluteConstraints(520, 34, 150, -1));
 
         jTxTNom.setEditable(false);
         jPanel_InformationsPersonne.add(jTxTNom, new org.netbeans.lib.awtextra.AbsoluteConstraints(100, 58, 250, -1));
@@ -423,10 +447,10 @@ public class Fenetre_Gestion extends javax.swing.JFrame {
         jPanel_InformationsPersonne.add(jLab_Nom, new org.netbeans.lib.awtextra.AbsoluteConstraints(10, 60, 50, 20));
 
         jTxT_Prenom.setEditable(false);
-        jPanel_InformationsPersonne.add(jTxT_Prenom, new org.netbeans.lib.awtextra.AbsoluteConstraints(520, 70, 180, -1));
+        jPanel_InformationsPersonne.add(jTxT_Prenom, new org.netbeans.lib.awtextra.AbsoluteConstraints(520, 63, 150, 20));
 
         jLab_Prenom.setText("Prénom");
-        jPanel_InformationsPersonne.add(jLab_Prenom, new org.netbeans.lib.awtextra.AbsoluteConstraints(390, 72, 70, 20));
+        jPanel_InformationsPersonne.add(jLab_Prenom, new org.netbeans.lib.awtextra.AbsoluteConstraints(390, 72, 70, 10));
 
         jTXT_Adresse.setEditable(false);
         jPanel_InformationsPersonne.add(jTXT_Adresse, new org.netbeans.lib.awtextra.AbsoluteConstraints(100, 88, 250, -1));
@@ -477,7 +501,7 @@ public class Fenetre_Gestion extends javax.swing.JFrame {
                 jCombo_LocaliteActionPerformed(evt);
             }
         });
-        jPanel_InformationsPersonne.add(jCombo_Localite, new org.netbeans.lib.awtextra.AbsoluteConstraints(360, 150, 190, 30));
+        jPanel_InformationsPersonne.add(jCombo_Localite, new org.netbeans.lib.awtextra.AbsoluteConstraints(360, 150, 160, 30));
 
         jCombo_Pays.setModel(leModelePays);
         jCombo_Pays.setEnabled(false);
@@ -486,9 +510,42 @@ public class Fenetre_Gestion extends javax.swing.JFrame {
                 jCombo_PaysActionPerformed(evt);
             }
         });
-        jPanel_InformationsPersonne.add(jCombo_Pays, new org.netbeans.lib.awtextra.AbsoluteConstraints(360, 180, 190, 30));
+        jPanel_InformationsPersonne.add(jCombo_Pays, new org.netbeans.lib.awtextra.AbsoluteConstraints(360, 180, 160, 30));
 
-        jPanel_Personne.add(jPanel_InformationsPersonne, new org.netbeans.lib.awtextra.AbsoluteConstraints(190, 360, 750, 350));
+        jPanel_Personne.add(jPanel_InformationsPersonne, new org.netbeans.lib.awtextra.AbsoluteConstraints(20, 270, 730, 330));
+
+        jPanel_Form_Employes.setBackground(new java.awt.Color(255, 255, 255));
+        jPanel_Form_Employes.setLayout(new org.netbeans.lib.awtextra.AbsoluteLayout());
+
+        jScrollPane_Employes.setViewportView(jTable_Employes);
+        jTable_Employes.setRowHeight(jTable_Clients.getRowHeight() + 5);
+
+        jPanel_Form_Employes.add(jScrollPane_Employes, new org.netbeans.lib.awtextra.AbsoluteConstraints(20, 30, 710, 110));
+
+        jLab_Salaire.setText("Salaire de l'employé");
+        jPanel_Form_Employes.add(jLab_Salaire, new org.netbeans.lib.awtextra.AbsoluteConstraints(470, 360, 130, 20));
+
+        jTxt_Salaire.setEditable(false);
+        jTxt_Salaire.setHorizontalAlignment(javax.swing.JTextField.RIGHT);
+        jPanel_Form_Employes.add(jTxt_Salaire, new org.netbeans.lib.awtextra.AbsoluteConstraints(600, 360, 120, 20));
+
+        jLab_Euro.setText("€");
+        jPanel_Form_Employes.add(jLab_Euro, new org.netbeans.lib.awtextra.AbsoluteConstraints(727, 357, 20, 20));
+
+        jLabel_Poste.setText("Poste");
+        jPanel_Form_Employes.add(jLabel_Poste, new org.netbeans.lib.awtextra.AbsoluteConstraints(474, 390, 120, 20));
+
+        jComboBox_Poste.setModel(leModelePoste);
+        jComboBox_Poste.setEnabled(false);
+        jComboBox_Poste.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent evt) {
+                jComboBox_PosteItemStateChanged(evt);
+            }
+        });
+        jPanel_Form_Employes.add(jComboBox_Poste, new org.netbeans.lib.awtextra.AbsoluteConstraints(600, 390, 140, 20));
+
+        jPanel_Personne.add(jPanel_Form_Employes, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 0, 950, 620));
+        jPanel_Form_Employes.setVisible(false);
 
         jPanel_Form_Clients.setBackground(new java.awt.Color(255, 255, 255));
         jPanel_Form_Clients.setLayout(new org.netbeans.lib.awtextra.AbsoluteLayout());
@@ -496,10 +553,10 @@ public class Fenetre_Gestion extends javax.swing.JFrame {
         jScrollPane_Clients.setViewportView(jTable_Clients);
         jTable_Clients.setRowHeight(jTable_Clients.getRowHeight() + 5);
 
-        jPanel_Form_Clients.add(jScrollPane_Clients, new org.netbeans.lib.awtextra.AbsoluteConstraints(10, 60, 1120, 210));
+        jPanel_Form_Clients.add(jScrollPane_Clients, new org.netbeans.lib.awtextra.AbsoluteConstraints(20, 30, 710, 110));
 
         jLab_Carte.setText("Carte fidélité");
-        jPanel_Form_Clients.add(jLab_Carte, new org.netbeans.lib.awtextra.AbsoluteConstraints(200, 670, 90, 30));
+        jPanel_Form_Clients.add(jLab_Carte, new org.netbeans.lib.awtextra.AbsoluteConstraints(200, 710, 80, 30));
 
         checkBox_Carte.setFont(new java.awt.Font("Lucida Grande", 0, 14)); // NOI18N
         checkBox_Carte.setCursor(new java.awt.Cursor(java.awt.Cursor.DEFAULT_CURSOR));
@@ -509,44 +566,11 @@ public class Fenetre_Gestion extends javax.swing.JFrame {
                 checkBox_CarteMouseClicked(evt);
             }
         });
-        jPanel_Form_Clients.add(checkBox_Carte, new org.netbeans.lib.awtextra.AbsoluteConstraints(300, 670, 30, 30));
+        jPanel_Form_Clients.add(checkBox_Carte, new org.netbeans.lib.awtextra.AbsoluteConstraints(300, 710, 20, 30));
 
-        jPanel_Personne.add(jPanel_Form_Clients, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 0, 1140, 820));
+        jPanel_Personne.add(jPanel_Form_Clients, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 0, 950, 630));
 
-        jPanel_Form_Employes.setBackground(new java.awt.Color(255, 255, 255));
-        jPanel_Form_Employes.setLayout(new org.netbeans.lib.awtextra.AbsoluteLayout());
-
-        jScrollPane_Employes.setViewportView(jTable_Employes);
-        jTable_Employes.setRowHeight(jTable_Clients.getRowHeight() + 5);
-
-        jPanel_Form_Employes.add(jScrollPane_Employes, new org.netbeans.lib.awtextra.AbsoluteConstraints(10, 60, 1120, 210));
-
-        jLab_Salaire.setText("Salaire de l'employé");
-        jPanel_Form_Employes.add(jLab_Salaire, new org.netbeans.lib.awtextra.AbsoluteConstraints(590, 630, -1, -1));
-
-        jTxt_Salaire.setEditable(false);
-        jTxt_Salaire.setHorizontalAlignment(javax.swing.JTextField.RIGHT);
-        jPanel_Form_Employes.add(jTxt_Salaire, new org.netbeans.lib.awtextra.AbsoluteConstraints(730, 620, 170, -1));
-
-        jLab_Euro.setText("€");
-        jPanel_Form_Employes.add(jLab_Euro, new org.netbeans.lib.awtextra.AbsoluteConstraints(910, 630, -1, -1));
-
-        jLabel_Poste.setText("Poste");
-        jPanel_Form_Employes.add(jLabel_Poste, new org.netbeans.lib.awtextra.AbsoluteConstraints(204, 670, 50, 30));
-
-        jComboBox_Poste.setModel(leModelePoste);
-        jComboBox_Poste.setEnabled(false);
-        jComboBox_Poste.addItemListener(new java.awt.event.ItemListener() {
-            public void itemStateChanged(java.awt.event.ItemEvent evt) {
-                jComboBox_PosteItemStateChanged(evt);
-            }
-        });
-        jPanel_Form_Employes.add(jComboBox_Poste, new org.netbeans.lib.awtextra.AbsoluteConstraints(280, 670, 170, 30));
-
-        jPanel_Personne.add(jPanel_Form_Employes, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 0, 1140, 820));
-        jPanel_Form_Employes.setVisible(false);
-
-        getContentPane().add(jPanel_Personne, new org.netbeans.lib.awtextra.AbsoluteConstraints(240, 60, 1140, 820));
+        getContentPane().add(jPanel_Personne, new org.netbeans.lib.awtextra.AbsoluteConstraints(240, 60, 780, 630));
 
         jPanel_Form_Produits.setBackground(new java.awt.Color(255, 255, 255));
         jPanel_Form_Produits.setLayout(new org.netbeans.lib.awtextra.AbsoluteLayout());
@@ -605,14 +629,14 @@ public class Fenetre_Gestion extends javax.swing.JFrame {
         jTxt_Quantite.setEditable(false);
         jPanel_CoordonneesProduit.add(jTxt_Quantite, new org.netbeans.lib.awtextra.AbsoluteConstraints(100, 295, 160, 30));
 
-        jPanel_Form_Produits.add(jPanel_CoordonneesProduit, new org.netbeans.lib.awtextra.AbsoluteConstraints(310, 360, 500, 340));
+        jPanel_Form_Produits.add(jPanel_CoordonneesProduit, new org.netbeans.lib.awtextra.AbsoluteConstraints(20, 270, 730, 330));
 
         jScrollPane_Produits.setViewportView(jTable_Produits);
         jTable_Produits.setRowHeight(jTable_Clients.getRowHeight() + 5);
 
-        jPanel_Form_Produits.add(jScrollPane_Produits, new org.netbeans.lib.awtextra.AbsoluteConstraints(10, 60, 1120, 210));
+        jPanel_Form_Produits.add(jScrollPane_Produits, new org.netbeans.lib.awtextra.AbsoluteConstraints(20, 30, 720, 110));
 
-        getContentPane().add(jPanel_Form_Produits, new org.netbeans.lib.awtextra.AbsoluteConstraints(240, 60, 1140, 820));
+        getContentPane().add(jPanel_Form_Produits, new org.netbeans.lib.awtextra.AbsoluteConstraints(240, 60, 770, 630));
         jPanel_Form_Produits.setVisible(false);
 
         jPanel_Form_Tickets.setBackground(new java.awt.Color(255, 255, 255));
@@ -621,17 +645,17 @@ public class Fenetre_Gestion extends javax.swing.JFrame {
         jScrollPane_Tickets.setViewportView(jTable_Tickets);
         jTable_Tickets.setRowHeight(jTable_Tickets.getRowHeight()+15);
 
-        jPanel_Form_Tickets.add(jScrollPane_Tickets, new org.netbeans.lib.awtextra.AbsoluteConstraints(10, 60, 1120, 210));
+        jPanel_Form_Tickets.add(jScrollPane_Tickets, new org.netbeans.lib.awtextra.AbsoluteConstraints(20, 30, 710, 110));
 
         jScrollPane_LignesTickets.setViewportView(jTable_LignesTickets);
 
-        jPanel_Form_Tickets.add(jScrollPane_LignesTickets, new org.netbeans.lib.awtextra.AbsoluteConstraints(10, 420, 1120, 250));
+        jPanel_Form_Tickets.add(jScrollPane_LignesTickets, new org.netbeans.lib.awtextra.AbsoluteConstraints(80, 420, 640, 100));
 
         jLabel_TitreLignesTicket.setFont(new java.awt.Font("Segoe UI", 1, 18)); // NOI18N
         jLabel_TitreLignesTicket.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/Icones/ligne.png"))); // NOI18N
         jLabel_TitreLignesTicket.setText("   Lignes du ticket de caisse");
         jLabel_TitreLignesTicket.setToolTipText("");
-        jPanel_Form_Tickets.add(jLabel_TitreLignesTicket, new org.netbeans.lib.awtextra.AbsoluteConstraints(450, 360, 320, 50));
+        jPanel_Form_Tickets.add(jLabel_TitreLignesTicket, new org.netbeans.lib.awtextra.AbsoluteConstraints(240, 280, 300, 60));
 
         jBtn_Imprimer.setFont(new java.awt.Font("Lucida Grande", 1, 13)); // NOI18N
         jBtn_Imprimer.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/Icones/imprimer.png"))); // NOI18N
@@ -643,7 +667,7 @@ public class Fenetre_Gestion extends javax.swing.JFrame {
                 jBtn_ImprimerMouseReleased(evt);
             }
         });
-        jPanel_Form_Tickets.add(jBtn_Imprimer, new org.netbeans.lib.awtextra.AbsoluteConstraints(20, 710, 230, 100));
+        jPanel_Form_Tickets.add(jBtn_Imprimer, new org.netbeans.lib.awtextra.AbsoluteConstraints(20, 520, 210, 70));
 
         jButton_Solder.setFont(new java.awt.Font("Lucida Grande", 0, 18)); // NOI18N
         jButton_Solder.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/Icones/euro-24.png"))); // NOI18N
@@ -654,12 +678,12 @@ public class Fenetre_Gestion extends javax.swing.JFrame {
                 jButton_SolderMouseReleased(evt);
             }
         });
-        jPanel_Form_Tickets.add(jButton_Solder, new org.netbeans.lib.awtextra.AbsoluteConstraints(470, 720, 220, 80));
+        jPanel_Form_Tickets.add(jButton_Solder, new org.netbeans.lib.awtextra.AbsoluteConstraints(410, 540, 200, 50));
 
-        getContentPane().add(jPanel_Form_Tickets, new org.netbeans.lib.awtextra.AbsoluteConstraints(240, 60, 1140, 820));
+        getContentPane().add(jPanel_Form_Tickets, new org.netbeans.lib.awtextra.AbsoluteConstraints(240, 60, 770, 630));
         jPanel_Form_Tickets.setVisible(false);
 
-        setSize(new java.awt.Dimension(1377, 904));
+        setSize(new java.awt.Dimension(1002, 699));
         setLocationRelativeTo(null);
     }// </editor-fold>//GEN-END:initComponents
 
@@ -1609,9 +1633,27 @@ public class Fenetre_Gestion extends javax.swing.JFrame {
             public void keyReleased(KeyEvent e) {}
         }; 
         
+        KeyListener keyListener2 = new KeyListener(){           
+            @Override
+            public void keyTyped(KeyEvent e) {}
+
+            @Override
+            public void keyPressed(KeyEvent e) {}
+
+            @Override
+            public void keyReleased(KeyEvent e) {
+                enableSave();
+                StringBuilder codeBarres = new StringBuilder();
+                for (Character c : jTXT_CodeBarres.getText().toCharArray()) {
+                    codeBarres.append(codeBarresRemplaceur.getOrDefault(c, c));
+                }
+                jTXT_CodeBarres.setText(codeBarres.toString());
+            }
+        }; 
+        
         this.jTXT_Adresse.addKeyListener(keyListener);
         this.jTXT_CP.addKeyListener(keyListener);
-        this.jTXT_CodeBarres.addKeyListener(keyListener);
+        this.jTXT_CodeBarres.addKeyListener(keyListener2);
         this.jTXT_Email.addKeyListener(keyListener);
         this.jTXT_Mobile.addKeyListener(keyListener);
         this.jTXT_Pays.addKeyListener(keyListener);

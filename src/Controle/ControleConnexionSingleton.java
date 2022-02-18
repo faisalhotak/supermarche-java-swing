@@ -59,7 +59,7 @@ public class ControleConnexionSingleton {
                 
                 JOptionPane op = new JOptionPane();
                 op.showMessageDialog(null, "Impossible de se connecter"
-                            + " à la base de données", "Alerte", JOptionPane.ERROR_MESSAGE);
+                            + " à la base de données !\nRapport plus détaillé :\n\n" + e, "Alerte", JOptionPane.ERROR_MESSAGE);
 
                 etatConnexion = false;
             }            

@@ -112,7 +112,7 @@ public class Fenetre_Vente extends javax.swing.JFrame {
         jScrollPane2.setViewportView(jTable_Produits);
         jTable_Produits.setRowHeight(jTable_Produits.getRowHeight() + 5);
 
-        jPanel_Vente.add(jScrollPane2, new org.netbeans.lib.awtextra.AbsoluteConstraints(10, 220, 900, 210));
+        jPanel_Vente.add(jScrollPane2, new org.netbeans.lib.awtextra.AbsoluteConstraints(10, 220, 900, 170));
 
         jButton_Ajouter.setText("Ajouter");
         jButton_Ajouter.addMouseListener(new java.awt.event.MouseAdapter() {
@@ -120,7 +120,7 @@ public class Fenetre_Vente extends javax.swing.JFrame {
                 jButton_AjouterMouseReleased(evt);
             }
         });
-        jPanel_Vente.add(jButton_Ajouter, new org.netbeans.lib.awtextra.AbsoluteConstraints(360, 440, 200, 40));
+        jPanel_Vente.add(jButton_Ajouter, new org.netbeans.lib.awtextra.AbsoluteConstraints(360, 410, 200, 40));
 
         jButton_Retirer.setText("Retirer");
         jButton_Retirer.addMouseListener(new java.awt.event.MouseAdapter() {
@@ -128,13 +128,13 @@ public class Fenetre_Vente extends javax.swing.JFrame {
                 jButton_RetirerMouseReleased(evt);
             }
         });
-        jPanel_Vente.add(jButton_Retirer, new org.netbeans.lib.awtextra.AbsoluteConstraints(360, 670, 200, 40));
+        jPanel_Vente.add(jButton_Retirer, new org.netbeans.lib.awtextra.AbsoluteConstraints(360, 620, 200, 40));
         jPanel_Vente.add(jLabel_DateToday, new org.netbeans.lib.awtextra.AbsoluteConstraints(330, 100, 230, 20));
 
         jTable_Ventes.setModel(leModeleTemporaireLigneTicketCaisse);
         jScrollPane3.setViewportView(jTable_Ventes);
 
-        jPanel_Vente.add(jScrollPane3, new org.netbeans.lib.awtextra.AbsoluteConstraints(10, 490, 900, 170));
+        jPanel_Vente.add(jScrollPane3, new org.netbeans.lib.awtextra.AbsoluteConstraints(10, 470, 900, 140));
 
         jButton_Enregistrer.setFont(new java.awt.Font("Lucida Grande", 0, 12)); // NOI18N
         jButton_Enregistrer.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/Icon_client/statut_on.png"))); // NOI18N
@@ -144,17 +144,17 @@ public class Fenetre_Vente extends javax.swing.JFrame {
                 jButton_EnregistrerMouseReleased(evt);
             }
         });
-        jPanel_Vente.add(jButton_Enregistrer, new org.netbeans.lib.awtextra.AbsoluteConstraints(340, 730, 240, 60));
+        jPanel_Vente.add(jButton_Enregistrer, new org.netbeans.lib.awtextra.AbsoluteConstraints(340, 670, 240, 60));
 
         jTextField_Total.setFont(new java.awt.Font("Lucida Grande", 1, 13)); // NOI18N
         jTextField_Total.setHorizontalAlignment(javax.swing.JTextField.RIGHT);
         jTextField_Total.setEnabled(false);
-        jPanel_Vente.add(jTextField_Total, new org.netbeans.lib.awtextra.AbsoluteConstraints(730, 670, 180, -1));
+        jPanel_Vente.add(jTextField_Total, new org.netbeans.lib.awtextra.AbsoluteConstraints(730, 622, 180, 30));
         jTextField_Total.setEditable(false);
 
         jLabel2.setFont(new java.awt.Font("Lucida Grande", 1, 13)); // NOI18N
         jLabel2.setText("TOTAL :");
-        jPanel_Vente.add(jLabel2, new org.netbeans.lib.awtextra.AbsoluteConstraints(660, 676, -1, -1));
+        jPanel_Vente.add(jLabel2, new org.netbeans.lib.awtextra.AbsoluteConstraints(660, 622, -1, 30));
 
         jButton_Annuler.setFont(new java.awt.Font("Lucida Grande", 0, 12)); // NOI18N
         jButton_Annuler.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/Icon_client/statut_off.png"))); // NOI18N
@@ -164,9 +164,9 @@ public class Fenetre_Vente extends javax.swing.JFrame {
                 jButton_AnnulerMouseReleased(evt);
             }
         });
-        jPanel_Vente.add(jButton_Annuler, new org.netbeans.lib.awtextra.AbsoluteConstraints(790, 730, 120, 60));
+        jPanel_Vente.add(jButton_Annuler, new org.netbeans.lib.awtextra.AbsoluteConstraints(790, 670, 120, 50));
 
-        getContentPane().add(jPanel_Vente, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 0, 930, 800));
+        getContentPane().add(jPanel_Vente, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 0, 950, 760));
 
         pack();
         setLocationRelativeTo(null);
